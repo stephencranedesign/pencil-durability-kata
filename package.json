@@ -15,7 +15,9 @@
     "@babel/register": "^7.4.4",
     "chai": "^4.2.0",
     "chance": "^1.0.18",
-    "mocha": "^6.1.4"
+    "mocha": "^6.1.4",
+    "sinon": "^7.3.2",
+    "sinon-chai": "^3.3.0"
   },
   "scripts": {
     "test": "mocha"
