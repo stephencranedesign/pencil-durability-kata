@@ -5,6 +5,7 @@ import sinon from 'sinon';
 import {TextMask} from '../../src/text-mask';
 
 describe('Pencil', () => {
+    let pencil;
     beforeEach(() => {
         sinon.stub(TextMask, 'enforceAndTrackCost');
     });
@@ -12,9 +13,7 @@ describe('Pencil', () => {
     afterEach(sinon.restore);
 
     describe('constructor', () => {
-        let pencil;
-
-        describe('default config', () => {
+        describe('setting default properties', () => {
             beforeEach(() => {
                 pencil = new Pencil();
             });
@@ -23,14 +22,15 @@ describe('Pencil', () => {
                 expect(pencil).to.be.instanceOf(Pencil);
             });
     
-            it('should set properites', () => {
+            it('should set default properites', () => {
                 expect(pencil).to.have.property('pointDurability', 10);
+                expect(pencil).to.have.property('initialPointDurability', 10);
                 expect(pencil).to.have.property('length', 10);
                 expect(pencil).to.have.property('eraserDurability', 10);
             });
         });
 
-        describe('config can set pointDurability', () => {
+        describe('when config has pointDurability', () => {
             let pointDurability;
 
             beforeEach(() => {
@@ -41,11 +41,28 @@ describe('Pencil', () => {
             it('should set pointDurability', () => {
                 expect(pencil).to.have.property('pointDurability', pointDurability);
             });
+
+            it('should set initialPointDurability to the same value', () => {
+                expect(pencil).to.have.property('initialPointDurability', pointDurability);
+            });
+        });
+
+        describe('when config has length', () => {
+            let length;
+
+            beforeEach(() => {
+                length = chance.integer({min: 0, max: 100});
+                pencil = new Pencil({length});
+            });
+    
+            it('should set pointDurability', () => {
+                expect(pencil).to.have.property('length', length);
+            });
         });
     });
 
     describe('write', () => {
-        let givenText, givenPointDurability, paperStub, pencil, expectedTextMask;
+        let givenText, givenPointDurability, paperStub, expectedTextMask;
 
         beforeEach(() => {
             pencil = new Pencil();
@@ -121,6 +138,55 @@ describe('Pencil', () => {
             it('should call setText with givenText', () => {
                 expect(paperStub.setText).to.have.callCount(1);
                 expect(paperStub.setText).to.be.calledWithExactly(expectedText + expectedTextMask.enforcedText);
+            });
+        });
+    });
+
+    describe('sharpen', () => {
+        let givenLength, givenInitialPointDurability;
+
+        beforeEach(() => {
+            pencil = new Pencil({});
+        });
+
+        describe('when pencil length is > 0', () => {
+            beforeEach(() => {
+                givenInitialPointDurability = chance.integer({min: 2, max: 100});
+                givenLength = chance.integer({min: 2, max: 100});
+
+                pencil.length = givenLength;
+                pencil.initialPointDurability = givenInitialPointDurability;
+                pencil.sharpen();
+            });
+
+            it('should reset pointDurability to initialPoint durability', () => {
+                expect(pencil).to.have.property('pointDurability', givenInitialPointDurability);
+            });
+
+            it('should subtract 1 from length', () => {
+                expect(pencil).to.have.property('length', givenLength - 1);
+            });
+        });
+
+        describe('when pencil length === 0', () => {
+            let givenPointDurability;
+
+            beforeEach(() => {
+                givenPointDurability = chance.integer({min: 2, max: 100});
+                givenInitialPointDurability = chance.integer({min: 2, max: 100});
+                givenLength = chance.integer({min: 2, max: 100});
+                pencil.length = 0;
+                pencil.initialPointDurability = givenInitialPointDurability;
+                pencil.pointDurability = givenPointDurability;
+                pencil.sharpen();
+            });
+
+            it('should not modify pointDurability', () => {
+                expect(pencil).to.have.property('pointDurability', givenPointDurability);
+            });
+            
+            it('should not modify length', () => {
+                expect(pencil).to.have.property('length', 0);
             });
         });
     });

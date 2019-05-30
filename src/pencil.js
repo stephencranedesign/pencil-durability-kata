@@ -2,10 +2,11 @@ import {TextMask} from './text-mask';
 
 export class Pencil {
     constructor(config = {}) {
-        const {pointDurability} = config;
+        const {pointDurability, length} = config;
 
         this.pointDurability = pointDurability || 10;
-        this.length = 10;
+        this.initialPointDurability = pointDurability || 10;
+        this.length = length || 10;
         this.eraserDurability = 10;
     }
 
@@ -14,5 +15,12 @@ export class Pencil {
         this.pointDurability = remainder;
         
         paper.setText(paper.getText() + enforcedText);
+    }
+
+    sharpen() {
+        if (this.length > 0) {
+            this.pointDurability = this.initialPointDurability;
+            this.length -= 1;
+        }
     }
 };
