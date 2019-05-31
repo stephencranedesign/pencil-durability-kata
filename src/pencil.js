@@ -10,8 +10,8 @@ export class Pencil {
         this.eraserDurability = 10;
     }
 
-    write(paper, text) {
-        const {enforcedText, remainder} = TextMask.enforceAndTrackCost(text, this.pointDurability);
+    write(paper, textToWrite) {
+        const {enforcedText, remainder} = TextMask.enforceAndTrackCost(textToWrite, this.pointDurability);
         this.pointDurability = remainder;
         
         paper.setText(paper.getText() + enforcedText);
@@ -23,4 +23,18 @@ export class Pencil {
             this.length -= 1;
         }
     }
+
+    erase(paper, textToErase) {
+        const currentText = paper.getText();
+        const lastIndex = currentText.lastIndexOf(textToErase);
+        const modifiedText = currentText.slice(0, lastIndex) +
+            getWhiteSpaces(textToErase.length) +
+            currentText.slice(lastIndex + textToErase.length);
+
+        paper.setText(modifiedText);
+    }
 };
+
+function getWhiteSpaces(number) {
+    return Array(number + 1).join(' ');
+}

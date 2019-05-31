@@ -3,11 +3,14 @@ import {Pencil} from '../../src/pencil';
 import {Paper} from '../../src/paper';
 import sinon from 'sinon';
 import {TextMask} from '../../src/text-mask';
+import {getWhiteSpaces} from './helpers';
 
 describe('Pencil', () => {
-    let pencil;
+    let pencil, paperStub;
+
     beforeEach(() => {
         sinon.stub(TextMask, 'enforceAndTrackCost');
+        paperStub = sinon.createStubInstance(Paper);
     });
 
     afterEach(sinon.restore);
@@ -62,11 +65,10 @@ describe('Pencil', () => {
     });
 
     describe('write', () => {
-        let givenText, givenPointDurability, paperStub, expectedTextMask;
+        let givenText, givenPointDurability, expectedTextMask;
 
         beforeEach(() => {
             pencil = new Pencil();
-            paperStub = sinon.createStubInstance(Paper);
         });
 
         describe('common functionality', () => {
@@ -188,6 +190,36 @@ describe('Pencil', () => {
             it('should not modify length', () => {
                 expect(pencil).to.have.property('length', 0);
             });
+        });
+    });
+
+    describe('erase', () => {
+        let givenWord, expectedText, expectedModifiedText;
+
+        beforeEach(() => {
+            const phrase1 = chance.string();
+            const phrase2 = chance.string();
+            const phrase3 = chance.string();
+
+            pencil = new Pencil();
+            givenWord = chance.string();
+
+            expectedText = phrase1 + givenWord + phrase2 + givenWord + phrase3;
+            expectedModifiedText = phrase1 + givenWord + phrase2 + getWhiteSpaces(givenWord.length) + phrase3;
+
+            paperStub.getText.returns(expectedText);
+            pencil.erase(paperStub, givenWord);
+        });
+
+        it('should call paper.getText', () => {
+            expect(paperStub.getText).to.have.callCount(1);
+            expect(paperStub.getText).to.be.calledWithExactly();
+            expect(paperStub.getText).calledBefore(paperStub.setText);
+        });
+
+        it('should call paper.setText with last occurance of givenWord replaced by white spaces', () => {
+            expect(paperStub.setText).to.have.callCount(1);
+            expect(paperStub.setText).to.be.calledWithExactly(expectedModifiedText);
         });
     });
 });
