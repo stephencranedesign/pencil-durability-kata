@@ -43,7 +43,7 @@ describe('Pencil', () => {
             let pointDurability;
 
             beforeEach(() => {
-                pointDurability = chance.integer({min: 0, max: 100});
+                pointDurability = chance.integer({min: 1, max: 100});
                 pencil = new Pencil({pointDurability});
             });
     
@@ -60,7 +60,7 @@ describe('Pencil', () => {
             let length;
 
             beforeEach(() => {
-                length = chance.integer({min: 0, max: 100});
+                length = chance.integer({min: 1, max: 100});
                 pencil = new Pencil({length});
             });
     
