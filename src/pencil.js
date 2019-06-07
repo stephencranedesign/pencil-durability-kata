@@ -1,4 +1,4 @@
-import {TextMask} from './text-mask';
+import {writeAndTrackCost} from './text-processors';
 
 export class Pencil {
     constructor(config = {}) {
@@ -11,10 +11,10 @@ export class Pencil {
     }
 
     write(paper, textToWrite) {
-        const {enforcedText, remainder} = TextMask.enforceAndTrackCost(textToWrite, this.pointDurability);
+        const {processedText, remainder} = writeAndTrackCost(textToWrite, this.pointDurability);
         this.pointDurability = remainder;
         
-        paper.setText(paper.getText() + enforcedText);
+        paper.setText(paper.getText() + processedText);
     }
 
     sharpen() {

@@ -1,16 +1,22 @@
 import {expect} from 'chai';
-import {Pencil} from '../../src/pencil';
 import {Paper} from '../../src/paper';
 import sinon from 'sinon';
-import {TextMask} from '../../src/text-mask';
+import * as textProcessors from '../../src/text-processors';
 import {getWhiteSpaces} from './helpers';
+import proxyquire from 'proxyquire';
 
 describe('Pencil', () => {
-    let pencil, paperStub;
+    let Pencil, pencil, paperStub, writeAndTrackCostStub;
 
     beforeEach(() => {
-        sinon.stub(TextMask, 'enforceAndTrackCost');
+        writeAndTrackCostStub = sinon.stub();
         paperStub = sinon.createStubInstance(Paper);
+
+        const MODULE = proxyquire('../../src/pencil', {
+            './text-processors': {writeAndTrackCost: writeAndTrackCostStub}
+        })
+
+        Pencil = MODULE.Pencil;
     });
 
     afterEach(sinon.restore);
@@ -65,7 +71,7 @@ describe('Pencil', () => {
     });
 
     describe('write', () => {
-        let givenText, givenPointDurability, expectedTextMask;
+        let givenText, givenPointDurability, writeAndTrackCostResponse;
 
         beforeEach(() => {
             pencil = new Pencil();
@@ -75,13 +81,13 @@ describe('Pencil', () => {
             beforeEach(() => {
                 givenText = chance.string({length: 5});
                 givenPointDurability = chance.integer({min: 0, max: 200});
-                expectedTextMask = {
-                    enforcedText: chance.string(),
+                writeAndTrackCostResponse = {
+                    processedText: chance.string(),
                     remainder: chance.integer({min: 0})
                 };
 
                 paperStub.getText.returns('');
-                TextMask.enforceAndTrackCost.returns(expectedTextMask);
+                writeAndTrackCostStub.returns(writeAndTrackCostResponse);
 
                 pencil.pointDurability = givenPointDurability;
                 pencil.write(paperStub, givenText);
@@ -92,32 +98,32 @@ describe('Pencil', () => {
                 expect(paperStub.getText).to.be.calledWithExactly();
             });
     
-            it('should call TextMask.enforceAndTrackCost', () => {
-                expect(TextMask.enforceAndTrackCost).to.have.callCount(1);
-                expect(TextMask.enforceAndTrackCost).to.be.calledWithExactly(givenText, givenPointDurability);
+            it('should call textProcessors.writeAndTrackCost', () => {
+                expect(writeAndTrackCostStub).to.have.callCount(1);
+                expect(writeAndTrackCostStub).to.be.calledWithExactly(givenText, givenPointDurability);
             });
     
             it('should set pointDurability to the remainder', () => {
-                expect(pencil.pointDurability).to.equal(expectedTextMask.remainder);
+                expect(pencil.pointDurability).to.equal(writeAndTrackCostResponse.remainder);
             });
         });
 
         describe('when paper has no text', () => {
             beforeEach(() => {
-                expectedTextMask = {
-                    enforcedText: chance.string(),
+                writeAndTrackCostResponse = {
+                    processedText: chance.string(),
                     remainder: chance.integer({min: 0})
                 };
 
                 paperStub.getText.returns('');
-                TextMask.enforceAndTrackCost.returns(expectedTextMask);
+                writeAndTrackCostStub.returns(writeAndTrackCostResponse);
 
                 pencil.write(paperStub, givenText);
             });
 
             it('should call setText with givenText', () => {
                 expect(paperStub.setText).to.have.callCount(1);
-                expect(paperStub.setText).to.be.calledWithExactly(expectedTextMask.enforcedText);
+                expect(paperStub.setText).to.be.calledWithExactly(writeAndTrackCostResponse.processedText);
             });
         });
 
@@ -126,20 +132,20 @@ describe('Pencil', () => {
 
             beforeEach(() => {
                 expectedText = chance.string({length: 5});
-                expectedTextMask = {
-                    enforcedText: chance.string(),
+                writeAndTrackCostResponse = {
+                    processedText: chance.string(),
                     remainder: chance.integer({min: 0})
                 };
 
                 paperStub.getText.returns(expectedText);
-                TextMask.enforceAndTrackCost.returns(expectedTextMask);
+                writeAndTrackCostStub.returns(writeAndTrackCostResponse);
 
                 pencil.write(paperStub, givenText);
             });
 
             it('should call setText with givenText', () => {
                 expect(paperStub.setText).to.have.callCount(1);
-                expect(paperStub.setText).to.be.calledWithExactly(expectedText + expectedTextMask.enforcedText);
+                expect(paperStub.setText).to.be.calledWithExactly(expectedText + writeAndTrackCostResponse.processedText);
             });
         });
     });
