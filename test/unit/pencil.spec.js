@@ -1,9 +1,6 @@
-import {expect} from 'chai';
 import {Paper} from '../../src/paper';
-import sinon from 'sinon';
 import * as textProcessors from '../../src/text-processors';
 import {getWhiteSpaces} from './helpers';
-import proxyquire from 'proxyquire';
 
 describe('Pencil', () => {
     let Pencil, pencil, paperStub, writeAndTrackCostStub;

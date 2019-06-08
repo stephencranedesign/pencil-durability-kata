@@ -1,5 +1,4 @@
 import {writeAndTrackCost} from '../../../src/text-processors/write-and-track-cost';
-import {expect} from 'chai';
 
 const lowerCaseLetters = 'abcdefghijklmnopqrstuvwxyz';
 const upperCaseLetters = lowerCaseLetters.toUpperCase();

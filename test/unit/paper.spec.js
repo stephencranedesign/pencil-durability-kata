@@ -1,4 +1,3 @@
-import {expect} from 'chai';
 import {Paper} from '../../src/paper';
 
 describe('Paper class', () => {
