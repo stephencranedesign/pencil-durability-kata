@@ -4,14 +4,18 @@ import {getWhiteSpaces} from './helpers';
 import proxyquire from 'proxyquire';
 
 describe('Pencil', () => {
-    let Pencil, pencil, paperStub, writeAndTrackCostStub;
+    let Pencil, pencil, paperStub, writeAndTrackCostStub, eraseAndTrackCostStub;
 
     beforeEach(() => {
         writeAndTrackCostStub = sinon.stub();
+        eraseAndTrackCostStub = sinon.stub();
         paperStub = sinon.createStubInstance(Paper);
 
         const MODULE = proxyquire('../../src/pencil', {
-            './text-processors': {writeAndTrackCost: writeAndTrackCostStub}
+            './text-processors': {
+                writeAndTrackCost: writeAndTrackCostStub,
+                eraseAndTrackCost: eraseAndTrackCostStub
+            }
         })
 
         Pencil = MODULE.Pencil;
@@ -62,8 +66,21 @@ describe('Pencil', () => {
                 pencil = new Pencil({length});
             });
     
-            it('should set pointDurability', () => {
+            it('should set length', () => {
                 expect(pencil).to.have.property('length', length);
+            });
+        });
+
+        describe('when config has eraserDurability', () => {
+            let eraserDurability;
+
+            beforeEach(() => {
+                eraserDurability = chance.integer({min: 1, max: 100});
+                pencil = new Pencil({eraserDurability});
+            });
+    
+            it('should set eraserDurability', () => {
+                expect(pencil).to.have.property('eraserDurability', eraserDurability);
             });
         });
     });
@@ -198,20 +215,21 @@ describe('Pencil', () => {
     });
 
     describe('erase', () => {
-        let givenWord, expectedText, expectedModifiedText;
+        let givenWord, givenEraserDurability, getTextResponse, eraseAndTrackCostResponse;
 
         beforeEach(() => {
-            const phrase1 = chance.string();
-            const phrase2 = chance.string();
-            const phrase3 = chance.string();
-
-            pencil = new Pencil();
+            givenEraserDurability = chance.integer({min: 10});
+            pencil = new Pencil({eraserDurability: givenEraserDurability});
             givenWord = chance.string();
 
-            expectedText = phrase1 + givenWord + phrase2 + givenWord + phrase3;
-            expectedModifiedText = phrase1 + givenWord + phrase2 + getWhiteSpaces(givenWord.length) + phrase3;
+            getTextResponse = chance.string();
+            eraseAndTrackCostResponse = {
+                processedText: chance.string(),
+                remainer: chance.integer({min: 1})
+            };
 
-            paperStub.getText.returns(expectedText);
+            paperStub.getText.returns(getTextResponse);
+            eraseAndTrackCostStub.returns(eraseAndTrackCostResponse);
             pencil.erase(paperStub, givenWord);
         });
 
@@ -221,9 +239,19 @@ describe('Pencil', () => {
             expect(paperStub.getText).calledBefore(paperStub.setText);
         });
 
-        it('should call paper.setText with last occurance of givenWord replaced by white spaces', () => {
+        it('should call the eraseAndTrackCost textProcessor', () => {
+            expect(eraseAndTrackCostStub).to.have.callCount(1);
+            expect(eraseAndTrackCostStub).to.be.calledWithExactly(getTextResponse, givenWord, givenEraserDurability);
+            expect(eraseAndTrackCostStub).calledBefore(paperStub.setText);
+        });
+
+        it('should call paper.setText with the processedText', () => {
             expect(paperStub.setText).to.have.callCount(1);
-            expect(paperStub.setText).to.be.calledWithExactly(expectedModifiedText);
+            expect(paperStub.setText).to.be.calledWithExactly(eraseAndTrackCostResponse.processedText);
+        });
+
+        it('should set the remainer', () => {
+            expect(pencil.eraserDurability).to.equal(eraseAndTrackCostResponse.remainder);
         });
     });
 });
