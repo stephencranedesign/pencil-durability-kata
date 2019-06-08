@@ -2,7 +2,6 @@ import chai from 'chai';
 import sinonChai from 'sinon-chai';
 import Chance from 'chance';
 import sinon from 'sinon';
-import proxyquire from 'proxyquire';
 
 const chance = new Chance();
 
@@ -17,4 +16,4 @@ chance.object = () => Array(chance.d20() + 1).fill().reduce((acc, curr) => ({
 }), {});
 
 global.expect = chai.expect;
-global.proxyquire = proxyquire;
+global.sinon = sinon;

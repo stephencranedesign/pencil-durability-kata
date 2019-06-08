@@ -1,6 +1,7 @@
 import {Paper} from '../../src/paper';
 import * as textProcessors from '../../src/text-processors';
 import {getWhiteSpaces} from './helpers';
+import proxyquire from 'proxyquire';
 
 describe('Pencil', () => {
     let Pencil, pencil, paperStub, writeAndTrackCostStub;
