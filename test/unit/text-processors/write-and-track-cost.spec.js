@@ -1,18 +1,20 @@
 import {writeAndTrackCost} from '../../../src/text-processors/write-and-track-cost';
 
+const MASK_CHARACTER = chance.character({symbols: true});
 const lowerCaseLetters = 'abcdefghijklmnopqrstuvwxyz';
 const upperCaseLetters = lowerCaseLetters.toUpperCase();
 const NEW_LINE = '\n';
 const WHITE_SPACE = ' ';
 
 describe('Text Processors: writeAndTrackCost', () => {
-    let givenMaxCost, givenText, results;
+    let givenMaxCost, givenText, givenApplyMaskAtIndex, results;
 
-    describe('when cost of text to mask is less than or equal to the provided maxCost', () => {
+    describe('when cost of text to write is less than or equal to the provided maxCost', () => {
         let remainder;
 
         beforeEach(() => {
             givenMaxCost = chance.integer({min: 10, max: 100});
+            givenApplyMaskAtIndex = sinon.stub();
         });
 
         describe('AND given text with lowercase letters', () => {
@@ -21,7 +23,7 @@ describe('Text Processors: writeAndTrackCost', () => {
 
                 givenText = chance.string({pool: lowerCaseLetters, length: textLength});
                 remainder = givenMaxCost - textLength;
-                results = writeAndTrackCost(givenText, givenMaxCost);
+                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
             });
 
             it('should not mask characters', () => {
@@ -30,6 +32,10 @@ describe('Text Processors: writeAndTrackCost', () => {
 
             it('should correctly assign remainder', () => {
                 expect(results.remainder).to.equal(remainder);
+            });
+
+            it('should not call givenApplyMaskAtIndex', () => {
+                expect(givenApplyMaskAtIndex).to.have.callCount(0);
             });
         });
 
@@ -40,7 +46,7 @@ describe('Text Processors: writeAndTrackCost', () => {
 
                 givenText = chance.string({pool: upperCaseLetters, length: textLength});
                 remainder = givenMaxCost - (textLength * 2);
-                results = writeAndTrackCost(givenText, givenMaxCost);
+                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
             });
 
             it('should not mask characters', () => {
@@ -49,6 +55,10 @@ describe('Text Processors: writeAndTrackCost', () => {
 
             it('should correctly assign remainder', () => {
                 expect(results.remainder).to.equal(remainder);
+            });
+
+            it('should not call givenApplyMaskAtIndex', () => {
+                expect(givenApplyMaskAtIndex).to.have.callCount(0);
             });
         });
 
@@ -64,7 +74,7 @@ describe('Text Processors: writeAndTrackCost', () => {
 
                 givenText = chance.shuffle([...uppercase, ...lowercase]).join('');
                 remainder = givenMaxCost - textLengthOfLowercase - (textLengthOfUppercase*2);
-                results = writeAndTrackCost(givenText, givenMaxCost);
+                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
             });
 
             it('should not mask characters', () => {
@@ -73,6 +83,10 @@ describe('Text Processors: writeAndTrackCost', () => {
 
             it('should correctly assign remainder', () => {
                 expect(results.remainder).to.equal(remainder);
+            });
+
+            it('should not call givenApplyMaskAtIndex', () => {
+                expect(givenApplyMaskAtIndex).to.have.callCount(0);
             });
         });
 
@@ -87,7 +101,7 @@ describe('Text Processors: writeAndTrackCost', () => {
 
                 givenText =  NEW_LINE + givenText1 + NEW_LINE + givenText2 + NEW_LINE;
                 remainder = givenMaxCost - textLength1 - textLength2;
-                results = writeAndTrackCost(givenText, givenMaxCost);
+                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
             });
 
             it('should not mask characters', () => {
@@ -96,6 +110,10 @@ describe('Text Processors: writeAndTrackCost', () => {
 
             it('should correctly assign remainder', () => {
                 expect(results.remainder).to.equal(remainder);
+            });
+
+            it('should not call givenApplyMaskAtIndex', () => {
+                expect(givenApplyMaskAtIndex).to.have.callCount(0);
             });
         });
 
@@ -110,7 +128,7 @@ describe('Text Processors: writeAndTrackCost', () => {
 
                 givenText =  WHITE_SPACE + givenText1 + WHITE_SPACE + givenText2 + WHITE_SPACE;
                 remainder = givenMaxCost - textLength1 - textLength2;
-                results = writeAndTrackCost(givenText, givenMaxCost);
+                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
             });
 
             it('should not mask characters', () => {
@@ -120,24 +138,30 @@ describe('Text Processors: writeAndTrackCost', () => {
             it('should correctly assign remainder', () => {
                 expect(results.remainder).to.equal(remainder);
             });
+
+            it('should not call givenApplyMaskAtIndex', () => {
+                expect(givenApplyMaskAtIndex).to.have.callCount(0);
+            });
         });
     });
 
-    describe('when cost of text to mask is greater than the provided maxCost', () => {
-        let actualText;
+    describe('when cost of text to write is greater than the provided maxCost', () => {
+        let actualText, lengthOfMaskedText;
 
         beforeEach(() => {
             givenMaxCost = chance.integer({min: 10, max: 100});
+            lengthOfMaskedText = chance.integer({min: 1, max: 20});
+            givenApplyMaskAtIndex = sinon.stub().returns(MASK_CHARACTER);
         });
 
         describe('AND given text with lowercase letters', () => {
             beforeEach(() => {
                 const givenText1 = chance.string({pool: lowerCaseLetters, length: givenMaxCost});
-                const givenText2 = chance.string({pool: lowerCaseLetters, length: givenMaxCost});
+                const givenText2 = chance.string({pool: lowerCaseLetters, length: lengthOfMaskedText});
 
                 givenText = givenText1 + givenText2;
-                actualText = givenText.substring(0, givenMaxCost) + getWhiteSpaces(givenMaxCost);
-                results = writeAndTrackCost(givenText, givenMaxCost);
+                actualText = givenText1 + getMaskForLength(lengthOfMaskedText);
+                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
             });
 
             it('should correctly mask text', () => {
@@ -146,18 +170,25 @@ describe('Text Processors: writeAndTrackCost', () => {
 
             it('should set remainder to 0', () => {
                 expect(results.remainder).to.equal(0);
+            });
+
+            it('should call givenApplyMaskAtIndex correctly', () => {
+                assertGivenApplyMaskAtIndex(givenApplyMaskAtIndex, lengthOfMaskedText, givenMaxCost);
             });
         });
 
         describe('AND given text with uppercase letters', () => {
+            let halfOfGivenMaxCost;
+
             beforeEach(() => {
-                const halfOfGivenMaxCost = Math.floor(givenMaxCost/2);
+                halfOfGivenMaxCost = Math.floor(givenMaxCost/2);
+
                 const givenText1 = chance.string({pool: upperCaseLetters, length: halfOfGivenMaxCost});
-                const givenText2 = chance.string({pool: upperCaseLetters, length: halfOfGivenMaxCost});
+                const givenText2 = chance.string({pool: upperCaseLetters, length: lengthOfMaskedText});
 
                 givenText = givenText1 + givenText2;
-                actualText = givenText.substring(0, halfOfGivenMaxCost) + getWhiteSpaces(halfOfGivenMaxCost);
-                results = writeAndTrackCost(givenText, givenMaxCost);
+                actualText = givenText1 + getMaskForLength(lengthOfMaskedText);
+                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
             });
 
             it('should correctly mask text', () => {
@@ -167,42 +198,46 @@ describe('Text Processors: writeAndTrackCost', () => {
             it('should set remainder to 0', () => {
                 expect(results.remainder).to.equal(0);
             });
+
+            it('should call givenApplyMaskAtIndex correctly', () => {
+                assertGivenApplyMaskAtIndex(givenApplyMaskAtIndex, lengthOfMaskedText, halfOfGivenMaxCost);
+            });
         });
 
         describe('AND given text with mixedcase letters', () => {
-            describe('Abc', () => {
+            describe('AND first character is a capitol letter', () => {
                 givenText = 'Abc';
-                assertMixedCase(givenText, 1, getWhiteSpaces(3));
-                assertMixedCase(givenText, 2, `A${getWhiteSpaces(2)}`);
-                assertMixedCase(givenText, 3, `Ab${getWhiteSpaces(1)}`);
-                assertMixedCase(givenText, 4, 'Abc');
+                assertMixedCase(givenText, 1, '', 3);
+                assertMixedCase(givenText, 2, 'A', 2);
+                assertMixedCase(givenText, 3, 'Ab', 1);
+                assertMixedCase(givenText, 4, 'Abc', 0);
             });
 
-            describe('aBc', () => {
+            describe('AND second character is a capitol letter', () => {
                 givenText = 'aBc';
-                assertMixedCase(givenText, 1, `a${getWhiteSpaces(2)}`);
-                assertMixedCase(givenText, 2, `a${getWhiteSpaces(2)}`);
-                assertMixedCase(givenText, 3, `aB${getWhiteSpaces(1)}`);
-                assertMixedCase(givenText, 4, 'aBc');
+                assertMixedCase(givenText, 1, 'a', 2);
+                assertMixedCase(givenText, 2, 'a', 2);
+                assertMixedCase(givenText, 3, 'aB', 1);
+                assertMixedCase(givenText, 4, 'aBc', 0);
             });
 
-            describe('abC', () => {
+            describe('AND third character is a capitol letter', () => {
                 givenText = 'abC';
-                assertMixedCase(givenText, 1, `a${getWhiteSpaces(2)}`);
-                assertMixedCase(givenText, 2, `ab${getWhiteSpaces(1)}`);
-                assertMixedCase(givenText, 3, `ab${getWhiteSpaces(1)}`);
-                assertMixedCase(givenText, 4, 'abC');
+                assertMixedCase(givenText, 1, 'a', 2);
+                assertMixedCase(givenText, 2, 'ab', 1);
+                assertMixedCase(givenText, 3, 'ab', 1);
+                assertMixedCase(givenText, 4, 'abC', 0);
             });
         });
 
         describe('AND handling newlines', () => {
             beforeEach(() => {
                 const givenText1 = chance.string({pool: lowerCaseLetters, length: givenMaxCost});
-                const givenText2 = chance.string({pool: lowerCaseLetters, length: givenMaxCost});
+                const givenText2 = chance.string({pool: lowerCaseLetters, length: lengthOfMaskedText});
                 
                 givenText =  NEW_LINE + givenText1 + NEW_LINE + givenText2 + NEW_LINE;
-                actualText = NEW_LINE + givenText1 + NEW_LINE + getWhiteSpaces(givenMaxCost) + NEW_LINE;
-                results = writeAndTrackCost(givenText, givenMaxCost);
+                actualText = NEW_LINE + givenText1 + NEW_LINE + getMaskForLength(lengthOfMaskedText) + NEW_LINE;
+                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
             });
 
             it('should not mask characters', () => {
@@ -211,17 +246,21 @@ describe('Text Processors: writeAndTrackCost', () => {
 
             it('should set remainder to 0', () => {
                 expect(results.remainder).to.equal(0);
+            });
+
+            it('should call givenApplyMaskAtIndex correctly', () => {
+                assertGivenApplyMaskAtIndex(givenApplyMaskAtIndex, lengthOfMaskedText, givenMaxCost + 2);
             });
         });
 
         describe('AND handling spaces', () => {
             beforeEach(() => {
                 const givenText1 = chance.string({pool: lowerCaseLetters, length: givenMaxCost});
-                const givenText2 = chance.string({pool: lowerCaseLetters, length: givenMaxCost});
+                const givenText2 = chance.string({pool: lowerCaseLetters, length: lengthOfMaskedText});
 
                 givenText =  WHITE_SPACE + givenText1 + WHITE_SPACE + givenText2 + WHITE_SPACE;
-                actualText = WHITE_SPACE + givenText1 + getWhiteSpaces(givenMaxCost + 2);
-                results = writeAndTrackCost(givenText, givenMaxCost);
+                actualText = WHITE_SPACE + givenText1 + WHITE_SPACE + getMaskForLength(lengthOfMaskedText) + WHITE_SPACE;
+                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
             });
 
             it('should not mask characters', () => {
@@ -231,17 +270,35 @@ describe('Text Processors: writeAndTrackCost', () => {
             it('should set remainder to 0', () => {
                 expect(results.remainder).to.equal(0);
             });
+
+            it('should call givenApplyMaskAtIndex correctly', () => {
+                assertGivenApplyMaskAtIndex(givenApplyMaskAtIndex, lengthOfMaskedText, givenMaxCost + 2);
+            });
+        });
+    });
+
+    describe('when givenApplyMaskAtIndex returns more then one character', () => {
+        beforeEach(() => {
+            const givenApplyMaskAtIndexResponse = chance.n(chance.character, 2 + chance.d6());
+
+            givenMaxCost = chance.integer({min: 10, max: 100});
+            givenText = chance.string({length: givenMaxCost + 1 + chance.d6()});
+
+            givenApplyMaskAtIndex = sinon.stub().returns(givenApplyMaskAtIndexResponse);
+        });
+
+        it('should throw error', () => {
+            const action = () => writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
+            expect(action).to.throw('applyMaskAtIndex can not return more then one character');
         });
     });
 });
 
-function assertMixedCase(givenText, givenMaxCost, actualText) {
-    describe(`givenMaxCost is ${givenMaxCost}`, () => {
-        let results;
-
-        beforeEach(() => {
-            results = writeAndTrackCost(givenText, givenMaxCost);
-        });
+function assertMixedCase(givenText, givenMaxCost, textToShow, numberOfCallsToGivenApplyMask) {
+    describe(`AND givenMaxCost is ${givenMaxCost}`, () => {
+        const actualText = textToShow + getMaskForLength(numberOfCallsToGivenApplyMask);
+        const givenApplyMaskAtIndex = sinon.stub().returns(MASK_CHARACTER);
+        const results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
 
         it(`should correctly mask text as: ${actualText}`, () => {
             expect(results.processedText).to.equal(actualText);
@@ -250,9 +307,29 @@ function assertMixedCase(givenText, givenMaxCost, actualText) {
         it('should set remainder to 0', () => {
             expect(results.remainder).to.equal(0);
         });
+
+        it('should call givenApplyMaskAtIndex correctly', () => {
+            const indexToStartMask = 3 - numberOfCallsToGivenApplyMask;
+
+            assertGivenApplyMaskAtIndex(givenApplyMaskAtIndex, numberOfCallsToGivenApplyMask, indexToStartMask);
+        });
     });
 }
 
-function getWhiteSpaces(number) {
-    return Array(number + 1).join(WHITE_SPACE);
+function assertGivenApplyMaskAtIndex(givenApplyMaskAtIndex, expectedCallCount, indexToStartMask) {
+    expect(givenApplyMaskAtIndex).to.have.callCount(expectedCallCount);
+
+    givenApplyMaskAtIndex.getCalls().forEach((call, i) => {
+        expect(call.args, `should call givenApplyMaskAtIndex with ${indexToStartMask + i} as first argument`).to.deep.equal([indexToStartMask + i]);
+    });
+}
+
+function getMaskForLength(number) {
+    const characters = [];
+
+    for (let i=0; i<number; i++) {
+        characters.push(MASK_CHARACTER);
+    }
+
+    return characters.join('');
 }

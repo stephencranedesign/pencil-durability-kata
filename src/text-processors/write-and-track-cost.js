@@ -1,6 +1,6 @@
 const WHITE_SPACE = ' ';
 
-export const writeAndTrackCost = (text, maxCost) => {
+export const writeAndTrackCost = (text, maxCost, applyMaskAtIndex) => {
     let costForText = 0,
         newText = [];
 
@@ -15,7 +15,10 @@ export const writeAndTrackCost = (text, maxCost) => {
         isUpperCase(character) ? costForText += 2 : costForText += 1;
 
         if (costForText > maxCost) {
-            newText.push(WHITE_SPACE);
+            const characterToAdd = applyMaskAtIndex(i);
+
+            ensureOnlyOneCharacterAdded(characterToAdd);
+            newText.push(characterToAdd);
         } else {
             newText.push(character);
         }
@@ -24,6 +27,12 @@ export const writeAndTrackCost = (text, maxCost) => {
     return {
         processedText: newText.join(''),
         remainder: costForText > maxCost ? 0 : maxCost - costForText
+    }
+}
+
+function ensureOnlyOneCharacterAdded(characterToAdd) {
+    if (characterToAdd.length > 1) {
+        throw new Error('applyMaskAtIndex can not return more then one character');
     }
 }
 

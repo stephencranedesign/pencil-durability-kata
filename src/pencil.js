@@ -11,7 +11,7 @@ export class Pencil {
     }
 
     write(paper, textToWrite) {
-        const {processedText, remainder} = writeAndTrackCost(textToWrite, this.pointDurability);
+        const {processedText, remainder} = writeAndTrackCostHelper(textToWrite, this.pointDurability);
         
         this.pointDurability = remainder;
         paper.setText(paper.getText() + processedText);
@@ -32,3 +32,8 @@ export class Pencil {
         paper.setText(processedText);
     }
 };
+
+const WHITE_SPACE_MASK = ' ';
+function writeAndTrackCostHelper(textToWrite, pointDurability) {
+    return writeAndTrackCost(textToWrite, pointDurability, () => WHITE_SPACE_MASK);
+}

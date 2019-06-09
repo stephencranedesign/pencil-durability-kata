@@ -86,82 +86,49 @@ describe('Pencil', () => {
     });
 
     describe('write', () => {
-        let givenText, givenPointDurability, writeAndTrackCostResponse;
+        let givenText, givenPointDurability, getTextResponse, writeAndTrackCostResponse;
 
         beforeEach(() => {
             pencil = new Pencil();
+
+            givenText = chance.string({length: 5});
+            givenPointDurability = chance.integer({min: 0, max: 200});
+            getTextResponse = chance.string();
+            writeAndTrackCostResponse = {
+                processedText: chance.string(),
+                remainder: chance.integer({min: 0})
+            };
+
+            paperStub.getText.returns(getTextResponse);
+            writeAndTrackCostStub.returns(writeAndTrackCostResponse);
+
+            pencil.pointDurability = givenPointDurability;
+            pencil.write(paperStub, givenText);
         });
 
-        describe('common functionality', () => {
-            beforeEach(() => {
-                givenText = chance.string({length: 5});
-                givenPointDurability = chance.integer({min: 0, max: 200});
-                writeAndTrackCostResponse = {
-                    processedText: chance.string(),
-                    remainder: chance.integer({min: 0})
-                };
-
-                paperStub.getText.returns('');
-                writeAndTrackCostStub.returns(writeAndTrackCostResponse);
-
-                pencil.pointDurability = givenPointDurability;
-                pencil.write(paperStub, givenText);
-            });
-
-            it('should call paper.getText', () => {
-                expect(paperStub.getText).to.have.callCount(1);
-                expect(paperStub.getText).to.be.calledWithExactly();
-            });
-    
-            it('should call textProcessors.writeAndTrackCost', () => {
-                expect(writeAndTrackCostStub).to.have.callCount(1);
-                expect(writeAndTrackCostStub).to.be.calledWithExactly(givenText, givenPointDurability);
-            });
-    
-            it('should set pointDurability to the remainder', () => {
-                expect(pencil.pointDurability).to.equal(writeAndTrackCostResponse.remainder);
-            });
+        it('should call paper.getText', () => {
+            expect(paperStub.getText).to.have.callCount(1);
+            expect(paperStub.getText).to.be.calledWithExactly();
         });
 
-        describe('when paper has no text', () => {
-            beforeEach(() => {
-                writeAndTrackCostResponse = {
-                    processedText: chance.string(),
-                    remainder: chance.integer({min: 0})
-                };
-
-                paperStub.getText.returns('');
-                writeAndTrackCostStub.returns(writeAndTrackCostResponse);
-
-                pencil.write(paperStub, givenText);
-            });
-
-            it('should call setText with givenText', () => {
-                expect(paperStub.setText).to.have.callCount(1);
-                expect(paperStub.setText).to.be.calledWithExactly(writeAndTrackCostResponse.processedText);
-            });
+        it('should call textProcessors.writeAndTrackCost with correct', () => {
+            expect(writeAndTrackCostStub).to.have.callCount(1);
+            expect(writeAndTrackCostStub).to.be.calledWithMatch(givenText, givenPointDurability);
         });
 
-        describe('when paper has text', () => {
-            let expectedText;
+        it('third argument should be a function that returns white space', () => {
+            const thirdArgument = writeAndTrackCostStub.firstCall.args[2];
 
-            beforeEach(() => {
-                expectedText = chance.string({length: 5});
-                writeAndTrackCostResponse = {
-                    processedText: chance.string(),
-                    remainder: chance.integer({min: 0})
-                };
+            expect(thirdArgument()).to.equal(' ');
+        });
 
-                paperStub.getText.returns(expectedText);
-                writeAndTrackCostStub.returns(writeAndTrackCostResponse);
+        it('should set pointDurability to the remainder', () => {
+            expect(pencil.pointDurability).to.equal(writeAndTrackCostResponse.remainder);
+        });
 
-                pencil.write(paperStub, givenText);
-            });
-
-            it('should call setText with givenText', () => {
-                expect(paperStub.setText).to.have.callCount(1);
-                expect(paperStub.setText).to.be.calledWithExactly(expectedText + writeAndTrackCostResponse.processedText);
-            });
+        it('should call setText', () => {
+            expect(paperStub.setText).to.have.callCount(1);
+            expect(paperStub.setText).to.be.calledWithExactly(getTextResponse + writeAndTrackCostResponse.processedText);
         });
     });
 
