@@ -222,10 +222,10 @@ describe('Pencil', () => {
             expect(pencil.eraserDurability).to.equal(eraseAndTrackCostResponse.remainder);
         });
 
-        it('should call paper.addEdit', () => {
-            expect(paperStub.addEdit).to.have.callCount(1);
-            expect(paperStub.addEdit).to.be.calledWithExactly(eraseAndTrackCostResponse.eraseIndex);
-            expect(paperStub.addEdit).calledAfter(paperStub.getText);
+        it('should call paper.addEditIndex', () => {
+            expect(paperStub.addEditIndex).to.have.callCount(1);
+            expect(paperStub.addEditIndex).to.be.calledWithExactly(eraseAndTrackCostResponse.eraseIndex);
+            expect(paperStub.addEditIndex).calledAfter(paperStub.getText);
         });
     });
 });

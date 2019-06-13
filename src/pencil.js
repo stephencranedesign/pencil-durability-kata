@@ -30,7 +30,7 @@ export class Pencil {
 
         this.eraserDurability = remainder;
         paper.setText(processedText);
-        paper.addEdit(eraseIndex);
+        paper.addEditIndex(eraseIndex);
     }
 };
 

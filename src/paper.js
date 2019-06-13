@@ -12,15 +12,15 @@ export class Paper {
         return this.text;
     }
 
-    addEdit(index) {
+    addEditIndex(index) {
         this.editIndexes.add(index);
     }
 
-    removeEdit(index) {
+    removeEditIndex(index) {
         this.editIndexes.delete(index);
     }
 
-    canEditAtIndex(index) {
+    hasEditIndex(index) {
         return this.editIndexes.has(index);
     }
 }

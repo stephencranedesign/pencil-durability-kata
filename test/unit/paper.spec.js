@@ -55,13 +55,13 @@ describe('Paper class', () => {
         });
     });
 
-    describe('addEdit', () => {
+    describe('addEditIndex', () => {
         let paper, givenIndex;
 
         beforeEach(() => {
             givenIndex = chance.integer({min: 0});
             paper = new Paper();
-            paper.addEdit(givenIndex);
+            paper.addEditIndex(givenIndex);
         });
 
         it('should add index', () => {
@@ -69,14 +69,14 @@ describe('Paper class', () => {
         });
     });
 
-    describe('removeEdit', () => {
+    describe('removeEditIndex', () => {
         let paper, givenIndex;
 
         beforeEach(() => {
             givenIndex = chance.integer({min: 0});
             paper = new Paper();
-            paper.addEdit(givenIndex);
-            paper.removeEdit(givenIndex);
+            paper.addEditIndex(givenIndex);
+            paper.removeEditIndex(givenIndex);
         });
 
         it('should remove index', () => {
@@ -84,15 +84,15 @@ describe('Paper class', () => {
         });
     });
 
-    describe('canEditAtIndex', () => {
+    describe('hasEditIndex', () => {
         let paper, givenIndex, result;
 
         describe('when an index is available for editing', () => {
             beforeEach(() => {
                 givenIndex = chance.integer({min: 0});
                 paper = new Paper();
-                paper.addEdit(givenIndex);
-                result = paper.canEditAtIndex(givenIndex);
+                paper.addEditIndex(givenIndex);
+                result = paper.hasEditIndex(givenIndex);
             });
     
             it('should return true', () => {
@@ -104,7 +104,7 @@ describe('Paper class', () => {
             beforeEach(() => {
                 givenIndex = chance.integer({min: 0});
                 paper = new Paper();
-                result = paper.canEditAtIndex(givenIndex);
+                result = paper.hasEditIndex(givenIndex);
             });
     
             it('should return false', () => {
