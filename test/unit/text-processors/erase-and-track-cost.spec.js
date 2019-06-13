@@ -2,7 +2,7 @@ import {eraseAndTrackCost} from '../../../src/text-processors/erase-and-track-co
 import {getWhiteSpaces} from '../helpers';
 
 describe('Text Processors: eraseAndTrackCost', () => {
-    let givenWord, givenText, expectedProcessedText, expectedRemainer, results;
+    let givenWord, givenText, expectedProcessedText, expectedRemainer, expectedEraseIndex, results;
 
     describe('when the length of the word to erase <= then the maxCost', () => {
         beforeEach(() => {
@@ -17,6 +17,7 @@ describe('Text Processors: eraseAndTrackCost', () => {
             givenText = phrase1 + givenWord + phrase2 + givenWord + phrase3;
             expectedProcessedText = phrase1 + givenWord + phrase2 + getWhiteSpaces(givenWord.length) + phrase3;
             expectedRemainer = maxCost - length;
+            expectedEraseIndex = phrase1.length + givenWord.length + phrase2.length;
 
             results = eraseAndTrackCost(givenText, givenWord, maxCost);
         });
@@ -27,6 +28,10 @@ describe('Text Processors: eraseAndTrackCost', () => {
 
         it('should correctly assign remainder', () => {
             expect(results.remainder).to.equal(expectedRemainer);
+        });
+
+        it('should correctly assign the edit index', () => {
+            expect(results.eraseIndex).to.equal(expectedEraseIndex);
         });
     });
 
@@ -45,6 +50,7 @@ describe('Text Processors: eraseAndTrackCost', () => {
             givenText = phrase1 + givenWord + phrase2 + givenWord + phrase3;
             expectedProcessedText = phrase1 + givenWord + phrase2 + maskedGivenWord + phrase3;  
             expectedRemainer = maxCost - length;
+            expectedEraseIndex = phrase1.length + givenWord.length + phrase2.length;
 
             results = eraseAndTrackCost(givenText, givenWord, maxCost);
         });
@@ -55,6 +61,10 @@ describe('Text Processors: eraseAndTrackCost', () => {
 
         it('should set remainder to 0', () => {
             expect(results.remainder).to.equal(0);
+        });
+
+        it('should correctly assign the edit index', () => {
+            expect(results.eraseIndex).to.equal(expectedEraseIndex);
         });
     });
 });

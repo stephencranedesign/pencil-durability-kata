@@ -17,7 +17,8 @@ export const eraseAndTrackCost = (text, textToErase, maxCost) => {
 
     return {
         processedText,
-        remainder
+        remainder,
+        eraseIndex: lastIndex
     };
 };
 

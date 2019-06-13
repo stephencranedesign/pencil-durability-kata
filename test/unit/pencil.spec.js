@@ -192,7 +192,8 @@ describe('Pencil', () => {
             getTextResponse = chance.string();
             eraseAndTrackCostResponse = {
                 processedText: chance.string(),
-                remainer: chance.integer({min: 1})
+                remainer: chance.integer({min: 1}),
+                eraseIndex: chance.integer({min: 1})
             };
 
             paperStub.getText.returns(getTextResponse);
@@ -219,6 +220,12 @@ describe('Pencil', () => {
 
         it('should set the remainer', () => {
             expect(pencil.eraserDurability).to.equal(eraseAndTrackCostResponse.remainder);
+        });
+
+        it('should call paper.addEdit', () => {
+            expect(paperStub.addEdit).to.have.callCount(1);
+            expect(paperStub.addEdit).to.be.calledWithExactly(eraseAndTrackCostResponse.eraseIndex);
+            expect(paperStub.addEdit).calledAfter(paperStub.getText);
         });
     });
 });

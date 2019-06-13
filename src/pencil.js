@@ -26,14 +26,14 @@ export class Pencil {
 
     erase(paper, textToErase) {
         const currentText = paper.getText();
-        const {processedText, remainder} = eraseAndTrackCost(currentText, textToErase, this.eraserDurability);
+        const {processedText, remainder, eraseIndex} = eraseAndTrackCost(currentText, textToErase, this.eraserDurability);
 
         this.eraserDurability = remainder;
         paper.setText(processedText);
+        paper.addEdit(eraseIndex);
     }
 };
 
-const WHITE_SPACE_MASK = ' ';
 function writeAndTrackCostHelper(textToWrite, pointDurability) {
-    return writeAndTrackCost(textToWrite, pointDurability, () => WHITE_SPACE_MASK);
+    return writeAndTrackCost(textToWrite, pointDurability, () => ' ');
 }
