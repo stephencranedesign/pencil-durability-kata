@@ -11,3 +11,7 @@ export function getSpecifiedNumberOfCharacters(number, character) {
 export function getWhiteSpaces(number) {
     return getSpecifiedNumberOfCharacters(number, ' ');
 }
+
+export function fail(message) {
+    throw new Error(message);
+}

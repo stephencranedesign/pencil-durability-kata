@@ -1,4 +1,4 @@
-import {writeAndTrackCost, eraseAndTrackCost} from './text-processors';
+import {writeAndTrackCost, eraseAndTrackCost, editAndTrackCost} from './text-processors';
 
 export class Pencil {
     constructor(config = {}) {
@@ -31,6 +31,18 @@ export class Pencil {
         this.eraserDurability = remainder;
         paper.setText(processedText);
         paper.addEditIndex(eraseIndex);
+    }
+
+    edit(paper, editText, editIndex) {
+        if (!paper.hasEditIndex(editIndex)) {
+            throw new Error('need to erase before you can edit');
+        }
+
+        const {processedText, remainder} = editAndTrackCost(paper.getText(), editIndex, editText, this.pointDurability);
+        
+        this.pointDurability = remainder;
+        paper.setText(processedText);
+        paper.removeEditIndex(editIndex);
     }
 };
 

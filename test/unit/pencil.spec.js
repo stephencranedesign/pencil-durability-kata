@@ -1,20 +1,22 @@
 import {Paper} from '../../src/paper';
 import * as textProcessors from '../../src/text-processors';
-import {getWhiteSpaces} from './helpers';
+import {getWhiteSpaces, fail} from './helpers';
 import proxyquire from 'proxyquire';
 
 describe('Pencil', () => {
-    let Pencil, pencil, paperStub, writeAndTrackCostStub, eraseAndTrackCostStub;
+    let Pencil, pencil, paperStub, writeAndTrackCostStub, eraseAndTrackCostStub, editAndTrackCostStub;
 
     beforeEach(() => {
         writeAndTrackCostStub = sinon.stub();
         eraseAndTrackCostStub = sinon.stub();
+        editAndTrackCostStub = sinon.stub();
         paperStub = sinon.createStubInstance(Paper);
 
         const MODULE = proxyquire('../../src/pencil', {
             './text-processors': {
                 writeAndTrackCost: writeAndTrackCostStub,
-                eraseAndTrackCost: eraseAndTrackCostStub
+                eraseAndTrackCost: eraseAndTrackCostStub,
+                editAndTrackCost: editAndTrackCostStub
             }
         })
 
@@ -111,15 +113,18 @@ describe('Pencil', () => {
             expect(paperStub.getText).to.be.calledWithExactly();
         });
 
-        it('should call textProcessors.writeAndTrackCost with correct', () => {
+        it('should call textProcessors.writeAndTrackCost with correctly', () => {
             expect(writeAndTrackCostStub).to.have.callCount(1);
             expect(writeAndTrackCostStub).to.be.calledWithMatch(givenText, givenPointDurability);
         });
 
         it('third argument should be a function that returns white space', () => {
             const thirdArgument = writeAndTrackCostStub.firstCall.args[2];
+            const callsToMake = 2 + chance.d6();
 
-            expect(thirdArgument()).to.equal(' ');
+            for (let i = i; i < callsToMake; i++) {
+                expect(thirdArgument(i)).to.equal(' ');
+            }
         });
 
         it('should set pointDurability to the remainder', () => {
@@ -226,6 +231,96 @@ describe('Pencil', () => {
             expect(paperStub.addEditIndex).to.have.callCount(1);
             expect(paperStub.addEditIndex).to.be.calledWithExactly(eraseAndTrackCostResponse.eraseIndex);
             expect(paperStub.addEditIndex).calledAfter(paperStub.getText);
+        });
+    });
+
+    describe('edit', () => {
+        let givenEdit, givenEditIndex, givenPointDurability, getTextResponse, editAndTrackCostResponse;
+
+        beforeEach(() => {
+            pencil = new Pencil();
+
+            givenEdit = chance.string({length: 20});
+            givenEditIndex = chance.integer({min: 0, max: 50});
+            givenPointDurability = chance.integer({min: 0, max: 200});
+            getTextResponse = chance.string();
+            editAndTrackCostResponse = {
+                processedText: chance.string(),
+                remainder: chance.integer({min: 0})
+            };
+
+            paperStub.getText.returns(getTextResponse);
+            editAndTrackCostStub.returns(editAndTrackCostResponse);
+
+            pencil.pointDurability = givenPointDurability;
+        });
+
+        describe('when paper has an edit at the given edit index', () => {
+            beforeEach(() => {
+                paperStub.hasEditIndex.returns(true);
+                pencil.edit(paperStub, givenEdit, givenEditIndex);
+            });
+
+            it('should call paper.hasEditIndex', () => {
+                expect(paperStub.hasEditIndex).to.have.callCount(1);
+                expect(paperStub.hasEditIndex).to.be.calledWithExactly(givenEditIndex);
+            });
+
+            it('should call paper.hasEditIndex before making any other calls', () => {
+                expect(paperStub.hasEditIndex).to.be.calledBefore(paperStub.getText);
+                expect(paperStub.hasEditIndex).to.be.calledBefore(editAndTrackCostStub);
+                expect(paperStub.hasEditIndex).to.be.calledBefore(paperStub.setText);
+                expect(paperStub.hasEditIndex).to.be.calledBefore(paperStub.removeEditIndex);
+            });
+
+            it('should call paper.getText', () => {
+                expect(paperStub.getText).to.have.callCount(1);
+                expect(paperStub.getText).to.be.calledWithExactly();
+            });
+    
+            it('should call textProcessors.editAndTrackCost with correctly', () => {
+                expect(editAndTrackCostStub).to.have.callCount(1);
+                expect(editAndTrackCostStub).to.be.calledWithMatch(getTextResponse, givenEditIndex, givenEdit, givenPointDurability);
+            });
+    
+            it('should set pointDurability to the remainder', () => {
+                expect(pencil.pointDurability).to.equal(editAndTrackCostResponse.remainder);
+            });
+    
+            it('should call setText', () => {
+                expect(paperStub.setText).to.have.callCount(1);
+                expect(paperStub.setText).to.be.calledWithExactly(editAndTrackCostResponse.processedText);
+            });
+    
+            it('should call removeEditIndex', () => {
+                expect(paperStub.removeEditIndex).to.have.callCount(1);
+                expect(paperStub.removeEditIndex).to.be.calledWithExactly(givenEditIndex);
+            });
+        });
+
+        describe('when paper does not have an edit at the given edit index', () => {
+            let action, expectedError;
+
+            beforeEach(() => {
+                paperStub.hasEditIndex.returns(false);
+                action = () => pencil.edit(paperStub, givenEdit, givenEditIndex);
+            });
+
+            it('should throw error', () => {
+                try {
+                    action();
+                    fail('should not have got here');
+                } catch(err) {
+                    expect(err.message).to.equal('need to erase before you can edit');
+                }
+            });
+
+            it('should not make any calls', () => {
+                expect(paperStub.getText).to.have.callCount(0);
+                expect(editAndTrackCostStub).to.have.callCount(0);
+                expect(paperStub.setText).to.have.callCount(0);
+                expect(paperStub.removeEditIndex).to.have.callCount(0);
+            });
         });
     });
 });
