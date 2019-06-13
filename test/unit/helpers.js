@@ -1,9 +1,13 @@
-export function getWhiteSpaces(number) {
+export function getSpecifiedNumberOfCharacters(number, character) {
     const stringToBe = [];
 
     for (var i = 1; i <= number; i++) {
-        stringToBe.push(' ');
+        stringToBe.push(character);
     }
 
     return stringToBe.join('');
+}
+
+export function getWhiteSpaces(number) {
+    return getSpecifiedNumberOfCharacters(number, ' ');
 }
