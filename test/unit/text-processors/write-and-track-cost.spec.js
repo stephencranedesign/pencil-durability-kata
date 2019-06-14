@@ -206,27 +206,30 @@ describe('Text Processors: writeAndTrackCost', () => {
 
         describe('AND given text with mixedcase letters', () => {
             describe('AND first character is a capitol letter', () => {
-                givenText = 'Abc';
-                assertMixedCase(givenText, 1, '', 3);
-                assertMixedCase(givenText, 2, 'A', 2);
-                assertMixedCase(givenText, 3, 'Ab', 1);
-                assertMixedCase(givenText, 4, 'Abc', 0);
+                const {full, char1, char2, char3} = getThreeRandomCharactersAndCapitolizeIndex(0);
+
+                assertMixedCase(full, 1, '', 3);
+                assertMixedCase(full, 2, char1, 2);
+                assertMixedCase(full, 3, char1 + char2, 1);
+                assertMixedCase(full, 4, full, 0);
             });
 
             describe('AND second character is a capitol letter', () => {
-                givenText = 'aBc';
-                assertMixedCase(givenText, 1, 'a', 2);
-                assertMixedCase(givenText, 2, 'a', 2);
-                assertMixedCase(givenText, 3, 'aB', 1);
-                assertMixedCase(givenText, 4, 'aBc', 0);
+                const {full, char1, char2, char3} = getThreeRandomCharactersAndCapitolizeIndex(1);
+
+                assertMixedCase(full, 1, char1, 2);
+                assertMixedCase(full, 2, char1, 2);
+                assertMixedCase(full, 3, char1 + char2, 1);
+                assertMixedCase(full, 4, full, 0);
             });
 
             describe('AND third character is a capitol letter', () => {
-                givenText = 'abC';
-                assertMixedCase(givenText, 1, 'a', 2);
-                assertMixedCase(givenText, 2, 'ab', 1);
-                assertMixedCase(givenText, 3, 'ab', 1);
-                assertMixedCase(givenText, 4, 'abC', 0);
+                const {full, char1, char2, char3} = getThreeRandomCharactersAndCapitolizeIndex(2);
+
+                assertMixedCase(full, 1, char1, 2);
+                assertMixedCase(full, 2, char1 + char2, 1);
+                assertMixedCase(full, 3, char1 + char2, 1);
+                assertMixedCase(full, 4, full, 0);
             });
         });
 
@@ -325,11 +328,22 @@ function assertGivenApplyMaskAtIndex(givenApplyMaskAtIndex, expectedCallCount, i
 }
 
 function getMaskForLength(number) {
-    const characters = [];
+    return getSpecifiedNumberOfCharacters(number, MASK_CHARACTER);
+}
 
-    for (let i=0; i<number; i++) {
-        characters.push(MASK_CHARACTER);
+function getThreeRandomCharactersAndCapitolizeIndex(indexToCapitolize) {
+    const characters = [
+        chance.character({alpha: true, casing: 'lower'}),
+        chance.character({alpha: true, casing: 'lower'}),
+        chance.character({alpha: true, casing: 'lower'})
+    ];
+
+    characters[indexToCapitolize] = characters[indexToCapitolize].toUpperCase();
+
+    return {
+        char1: characters[0],
+        char2: characters[1],
+        char3: characters[2],
+        full: characters.join('')
     }
-
-    return characters.join('');
 }
