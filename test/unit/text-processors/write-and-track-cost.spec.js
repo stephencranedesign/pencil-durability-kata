@@ -12,133 +12,23 @@ describe('Text Processors: writeAndTrackCost', () => {
         beforeEach(() => {
             givenMaxCost = chance.integer({min: 10, max: 100});
             givenApplyMaskAtIndex = sinon.stub();
+            const textLength = chance.integer({min: 2, max: givenMaxCost});
+
+            givenText = chance.string({pool: lowerCaseLetters, length: textLength});
+            expectedRemainder = givenMaxCost - textLength;
+            results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
         });
 
-        describe('AND given text with lowercase letters', () => {
-            beforeEach(() => {
-                const textLength = chance.integer({min: 2, max: givenMaxCost});
-
-                givenText = chance.string({pool: lowerCaseLetters, length: textLength});
-                expectedRemainder = givenMaxCost - textLength;
-                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
-            });
-
-            it('should not mask characters', () => {
-                expect(results.processedText).to.equal(givenText);
-            });
-
-            it('should correctly assign remainder', () => {
-                expect(results.remainder).to.equal(expectedRemainder);
-            });
-
-            it('should not call givenApplyMaskAtIndex', () => {
-                expect(givenApplyMaskAtIndex).to.have.callCount(0);
-            });
+        it('should not mask characters', () => {
+            expect(results.processedText).to.equal(givenText);
         });
 
-        describe('AND given text with uppercase letters', () => {
-            beforeEach(() => {
-                const halfOfGivenMaxCost = Math.floor(givenMaxCost/2);
-                const textLength = chance.integer({min: 2, max: halfOfGivenMaxCost});
-
-                givenText = chance.string({pool: upperCaseLetters, length: textLength});
-                expectedRemainder = givenMaxCost - (textLength * 2);
-                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
-            });
-
-            it('should not mask characters', () => {
-                expect(results.processedText).to.equal(givenText);
-            });
-
-            it('should correctly assign remainder', () => {
-                expect(results.remainder).to.equal(expectedRemainder);
-            });
-
-            it('should not call givenApplyMaskAtIndex', () => {
-                expect(givenApplyMaskAtIndex).to.have.callCount(0);
-            });
+        it('should correctly assign remainder', () => {
+            expect(results.remainder).to.equal(expectedRemainder);
         });
 
-        describe('AND given text with mixedcase letters', () => {
-            beforeEach(() => {
-                const halfOfGivenMaxCost = Math.floor(givenMaxCost/2);
-                const quarterOfGivenMaxCost = Math.floor(givenMaxCost/4);
-                const textLengthOfLowercase = chance.integer({min: 2, max: halfOfGivenMaxCost});
-                const textLengthOfUppercase = chance.integer({min: 2, max: quarterOfGivenMaxCost});
-
-                const uppercase = chance.n(() => chance.character({pool: upperCaseLetters}), textLengthOfUppercase);
-                const lowercase = chance.n(() => chance.character({pool: lowerCaseLetters}), textLengthOfLowercase);
-
-                givenText = chance.shuffle([...uppercase, ...lowercase]).join('');
-                expectedRemainder = givenMaxCost - textLengthOfLowercase - (textLengthOfUppercase*2);
-                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
-            });
-
-            it('should not mask characters', () => {
-                expect(results.processedText).to.equal(givenText);
-            });
-
-            it('should correctly assign remainder', () => {
-                expect(results.remainder).to.equal(expectedRemainder);
-            });
-
-            it('should not call givenApplyMaskAtIndex', () => {
-                expect(givenApplyMaskAtIndex).to.have.callCount(0);
-            });
-        });
-
-        describe('AND given text with newlines', () => {
-            beforeEach(() => {
-                const halfOfGivenMaxCost = Math.floor(givenMaxCost/2);
-                const textLength1 = chance.integer({min: 2, max: halfOfGivenMaxCost});
-                const textLength2 = chance.integer({min: 2, max: halfOfGivenMaxCost});
-
-                const givenText1 = chance.string({pool: lowerCaseLetters, length: textLength1});
-                const givenText2 = chance.string({pool: lowerCaseLetters, length: textLength2});
-
-                givenText =  NEW_LINE + givenText1 + NEW_LINE + givenText2 + NEW_LINE;
-                expectedRemainder = givenMaxCost - textLength1 - textLength2;
-                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
-            });
-
-            it('should not mask characters', () => {
-                expect(results.processedText).to.equal(givenText);
-            });
-
-            it('should correctly assign remainder', () => {
-                expect(results.remainder).to.equal(expectedRemainder);
-            });
-
-            it('should not call givenApplyMaskAtIndex', () => {
-                expect(givenApplyMaskAtIndex).to.have.callCount(0);
-            });
-        });
-
-        describe('AND given text with spaces', () => {
-            beforeEach(() => {
-                const halfOfGivenMaxCost = Math.floor(givenMaxCost/2);
-                const textLength1 = chance.integer({min: 2, max: halfOfGivenMaxCost});
-                const textLength2 = chance.integer({min: 2, max: halfOfGivenMaxCost});
-
-                const givenText1 = chance.string({pool: lowerCaseLetters, length: textLength1});
-                const givenText2 = chance.string({pool: lowerCaseLetters, length: textLength2});
-
-                givenText =  WHITE_SPACE + givenText1 + WHITE_SPACE + givenText2 + WHITE_SPACE;
-                expectedRemainder = givenMaxCost - textLength1 - textLength2;
-                results = writeAndTrackCost(givenText, givenMaxCost, givenApplyMaskAtIndex);
-            });
-
-            it('should not mask characters', () => {
-                expect(results.processedText).to.equal(givenText);
-            });
-
-            it('should correctly assign remainder', () => {
-                expect(results.remainder).to.equal(expectedRemainder);
-            });
-
-            it('should not call givenApplyMaskAtIndex', () => {
-                expect(givenApplyMaskAtIndex).to.have.callCount(0);
-            });
+        it('should not call givenApplyMaskAtIndex', () => {
+            expect(givenApplyMaskAtIndex).to.have.callCount(0);
         });
     });
 
