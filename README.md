@@ -4,5 +4,5 @@ This is a practice project with the purpose of writing code to simulate, first c
 ## Building & Running
 1) clone project
 2) cd into project
-3) npm i
-4) npm run test
+3) `npm i`
+4) `npm run test`
