@@ -3,7 +3,7 @@ import {writeAndTrackCost} from './write-and-track-cost';
 export const editAndTrackCost = (fullText, indexToEdit, editText, maxCost) => {
     const textBeforeEdit = fullText.substring(0, indexToEdit);
     const edit = constructEdit(fullText, indexToEdit, editText);
-    const {processedText, remainder} = writeAndTrackCost(edit, maxCost, getCharacterWhenMaxCostExceeded(editText));
+    const {processedText, remainder} = writeAndTrackCost(edit, maxCost, getCharacterWhenMaxCostExceeded(fullText, indexToEdit));
     const textAfterEdit = fullText.substring(indexToEdit + editText.length);
 
     return {
@@ -31,6 +31,6 @@ function isCollision(character) {
     return !isNewLine && !isSpace;
 }
 
-function getCharacterWhenMaxCostExceeded(editText) {
-    return (i) => editText.charAt(i);
+function getCharacterWhenMaxCostExceeded(fullText, indexToEdit) {
+    return (i) => fullText.charAt(indexToEdit + i);
 }

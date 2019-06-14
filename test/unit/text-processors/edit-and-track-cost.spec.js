@@ -67,7 +67,7 @@ describe('Text Processors: editAndTrackCost', () => {
             const applyMaskAtIndex = writeAndTrackCostStub.firstCall.args[2];
 
             for (let i = 0; i < givenEditText.length; i++) {
-                const characterBeforeEdit = givenEditText.charAt(i);
+                const characterBeforeEdit = givenText.charAt(givenIndexToEdit + i);
                 expect(applyMaskAtIndex(i)).to.equal(characterBeforeEdit);
             }
         });
