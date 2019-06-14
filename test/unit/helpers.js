@@ -15,3 +15,8 @@ export function getWhiteSpaces(number) {
 export function fail(message) {
     throw new Error(message);
 }
+
+export const lowerCaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+export const upperCaseLetters = lowerCaseLetters.toUpperCase();
+export const NEW_LINE = '\n';
+export const WHITE_SPACE = ' ';

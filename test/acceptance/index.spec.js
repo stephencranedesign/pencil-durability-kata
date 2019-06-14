@@ -88,7 +88,7 @@ describe('Pencil Durability Kata Acceptance Tests', () => {
     });
 
     describe('Erase', () => {
-        let textToErase, expectedTextFirstCall, expectedTextSecondCall, actualTextFirstCall, actualTextSecondCall;
+        let textToErase, expectedTextFirstCall, expectedTextSecondCall, result1, result2;
 
         beforeEach(() => {
             pencil = new Pencil({pointDurability: 100});
@@ -101,18 +101,18 @@ describe('Pencil Durability Kata Acceptance Tests', () => {
             paper.setText(givenText);
 
             pencil.erase(paper, textToErase);
-            actualTextFirstCall = paper.getText();
+            result1 = paper.getText();
 
             pencil.erase(paper, textToErase);
-            actualTextSecondCall = paper.getText();
+            result2 = paper.getText();
         });
 
         it('should delete the last occurance of the text', () => {
-            expect(actualTextFirstCall).to.equal(expectedTextFirstCall);
+            expect(result1).to.equal(expectedTextFirstCall);
         });
 
         it('should delete the last occurance of the text', () => {
-            expect(actualTextSecondCall).to.equal(expectedTextSecondCall);
+            expect(result2).to.equal(expectedTextSecondCall);
         });
     });
 

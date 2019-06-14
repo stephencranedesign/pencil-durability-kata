@@ -1,6 +1,11 @@
 import {writeAndTrackCost, eraseAndTrackCost, editAndTrackCost} from './text-processors';
 
 const defaultValue = value => value === 0 ? value : value || 10;
+const getText = paper => paper.getText();
+const setText = (paper, text) => paper.setText(text);
+const addEditIndex = (paper, index) => paper.addEditIndex(index);
+const hasEditIndex = (paper, index) => paper.hasEditIndex(index);
+const removeEditIndex = (paper, index) => paper.removeEditIndex(index); 
 
 export class Pencil {
     constructor(config = {}) {
@@ -16,7 +21,7 @@ export class Pencil {
         const {processedText, remainder} = writeAndTrackCostHelper(textToWrite, this.pointDurability);
         
         this.pointDurability = remainder;
-        paper.setText(paper.getText() + processedText);
+        setText(paper, getText(paper) + processedText);
     }
 
     sharpen() {
@@ -27,12 +32,12 @@ export class Pencil {
     }
 
     erase(paper, textToErase) {
-        const currentText = paper.getText();
+        const currentText = getText(paper);
         const {processedText, remainder, eraseIndex} = eraseAndTrackCost(currentText, textToErase, this.eraserDurability);
 
         this.eraserDurability = remainder;
-        paper.setText(processedText);
-        paper.addEditIndex(eraseIndex);
+        setText(paper, processedText);
+        addEditIndex(paper, eraseIndex);
     }
 
     edit(paper, editText, editIndex) {
@@ -43,8 +48,8 @@ export class Pencil {
         const {processedText, remainder} = editAndTrackCost(paper.getText(), editIndex, editText, this.pointDurability);
         
         this.pointDurability = remainder;
-        paper.setText(processedText);
-        paper.removeEditIndex(editIndex);
+        setText(paper, processedText);
+        removeEditIndex(paper, editIndex);
     }
 };
 

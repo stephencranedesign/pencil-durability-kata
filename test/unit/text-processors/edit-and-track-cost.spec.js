@@ -1,8 +1,5 @@
 import proxyquire from 'proxyquire';
-import {getWhiteSpaces, getSpecifiedNumberOfCharacters} from '../helpers';
-
-const NEW_LINE = '\n';
-const WHITE_SPACE = ' ';
+import {getWhiteSpaces, getSpecifiedNumberOfCharacters, NEW_LINE, WHITE_SPACE} from '../helpers';
 
 describe('Text Processors: editAndTrackCost', () => {
     let textBeforeEdit,
@@ -30,9 +27,9 @@ describe('Text Processors: editAndTrackCost', () => {
         expectedWhiteSpaces = getWhiteSpaces(spaceForEdit - sizeOfEditText);
 
         writeAndTrackCostStub = sinon.stub();
-        editAndTrackCost = proxyquire('../../../src/text-processors/edit-and-track-cost', {
+        editAndTrackCost = loadModule({
             './write-and-track-cost': {writeAndTrackCost: writeAndTrackCostStub}
-        }).editAndTrackCost;
+        });
 
         givenText = textBeforeEdit + getWhiteSpaces(spaceForEdit) + textAfterEdit;
         givenIndexToEdit = textBeforeEdit.length;
@@ -174,3 +171,7 @@ describe('Text Processors: editAndTrackCost', () => {
         });
     });
 });
+
+function loadModule(stubs) {
+    return proxyquire('../../../src/text-processors/edit-and-track-cost', stubs).editAndTrackCost;
+}
