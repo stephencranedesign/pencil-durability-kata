@@ -85,6 +85,23 @@ describe('Pencil', () => {
                 expect(pencil).to.have.property('eraserDurability', eraserDurability);
             });
         });
+
+        describe('when passed 0 for default properties', () => {
+            beforeEach(() => {
+                pencil = new Pencil({
+                    pointDurability: 0,
+                    length: 0,
+                    eraserDurability: 0
+                });
+            });
+
+            it('should not set properties to default values', () => {
+                expect(pencil).to.have.property('pointDurability', 0);
+                expect(pencil).to.have.property('initialPointDurability', 0);
+                expect(pencil).to.have.property('length', 0);
+                expect(pencil).to.have.property('eraserDurability', 0);
+            });
+        });
     });
 
     describe('write', () => {

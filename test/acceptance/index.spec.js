@@ -175,5 +175,24 @@ describe('Pencil Durability Kata Acceptance Tests', () => {
                 expect(paper.getText()).to.equal(expectedText);
             });
         });
+
+        describe('when pointDurability is at 0', () => {
+            beforeEach(() => {
+                pencil = new Pencil({pointDurability: 6});
+    
+                givenText = 'An       a day keeps the doctor away';
+                givenTextToAdd = 'artichoke';
+                givenEditIndex = 3;
+                expectedText = 'An articha day keeps the doctor away';
+    
+                paper.addEditIndex(givenEditIndex);
+                paper.setText(givenText);
+                pencil.edit(paper, givenTextToAdd, givenEditIndex);
+            });
+    
+            it('should add text to the paper', () => {
+                expect(paper.getText()).to.equal(expectedText);
+            });
+        });
     });
 });

@@ -1,13 +1,15 @@
 import {writeAndTrackCost, eraseAndTrackCost, editAndTrackCost} from './text-processors';
 
+const defaultValue = value => value === 0 ? value : value || 10;
+
 export class Pencil {
     constructor(config = {}) {
         const {pointDurability, length, eraserDurability} = config;
 
-        this.pointDurability = pointDurability || 10;
-        this.initialPointDurability = pointDurability || 10;
-        this.length = length || 10;
-        this.eraserDurability = eraserDurability || 10;
+        this.pointDurability = defaultValue(pointDurability);;
+        this.initialPointDurability = defaultValue(pointDurability);
+        this.length = defaultValue(length);
+        this.eraserDurability = defaultValue(eraserDurability);
     }
 
     write(paper, textToWrite) {
