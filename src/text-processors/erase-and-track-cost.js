@@ -6,8 +6,8 @@ export const eraseAndTrackCost = (text, textToErase, maxCost) => {
         remainder = maxCost - textToErase.length;
 
     if (isTooExpensive(textToErase, maxCost)) {
-        lengthOfMask = textToErase.length - maxCost;
-        indexToStartMask = lastIndex + lengthOfMask;
+        lengthOfMask = maxCost;
+        indexToStartMask = lastIndex + textToErase.length - maxCost;
         remainder = 0;
     }
 

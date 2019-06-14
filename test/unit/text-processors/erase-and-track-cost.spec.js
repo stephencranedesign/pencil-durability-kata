@@ -42,10 +42,11 @@ describe('Text Processors: eraseAndTrackCost', () => {
             const phrase1 = chance.string();
             const phrase2 = chance.string() + ' | ';
             const phrase3 = ' | ' + chance.string();
-            const lengthOfMask = length - maxCost;
+            const startOfMask = length - maxCost;
+            const lengthOfMask = maxCost;
 
             givenWord = chance.string({length});
-            const maskedGivenWord = givenWord.substring(0, lengthOfMask) + getWhiteSpaces(lengthOfMask);
+            const maskedGivenWord = givenWord.substring(0, startOfMask) + getWhiteSpaces(lengthOfMask);
 
             givenText = phrase1 + givenWord + phrase2 + givenWord + phrase3;
             expectedProcessedText = phrase1 + givenWord + phrase2 + maskedGivenWord + phrase3;  
